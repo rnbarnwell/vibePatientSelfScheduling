@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+  <title>Acme Urgent Care — Book Your Appointment</title>
+
+  <!-- Material Web (MD3) via esm.run for fast prototyping -->
+  <script type="module">
+    import "https://esm.run/@material/web/all.js";
+  </script>
+
+  <style>
+    :root { --md-sys-color-primary:#0b6b50; }
+    *{box-sizing:border-box}
+    body { margin:0; font-family:system-ui,Roboto,Arial,sans-serif; }
+    main.app { display:grid; grid-template-columns:minmax(280px,420px) 1fr; gap:28px; padding:20px; max-width:1200px; margin:auto; }
+    @media(max-width:900px){ main.app { grid-template-columns:1fr; } }
+
+    .card { background:#fff; border-radius:16px; padding:24px; box-shadow:0 2px 8px rgba(0,0,0,.08); display:flex; flex-direction:column; gap:20px; }
+
+    /* Calendar */
+    .calendar-header { display:grid; grid-template-columns:40px 1fr 40px; align-items:center; gap:8px; }
+    .weekday-row, .days-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; text-align:center; }
+    .weekday-row div { font-size:12px; font-weight:600; color:#555; }
+    .daybtn { display:grid; place-items:center; aspect-ratio:1/1; border:0; border-radius:10px; background:#f3f3f3; cursor:pointer; font-weight:600; }
+    .daybtn[disabled]{opacity:.35;cursor:not-allowed}
+
+    /* Slots */
+    .slot-list { display:grid; gap:10px; max-height:60vh; overflow:auto; }
+    .slot-btn { all:unset; display:block; width:100%; cursor:pointer; background:#fff; border-radius:12px; padding:12px 16px; border:1px solid rgba(0,0,0,.15); box-shadow:0 1px 0 rgba(0,0,0,.08); }
+    .slot-btn .txt { font-weight:600; color: #0b6b50; }
+    .slot-btn:hover { background: rgba(11,107,80,.06); }
+    .slot-btn[aria-checked="true"]{ border-color:#0b6b50; box-shadow:0 0 0 2px rgba(11,107,80,.25) inset; }
+
+    /* Form */
+    form.form { display:flex; flex-direction:column; gap:18px; margin-top:12px; }
+    .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    @media(max-width:720px){ .grid-2 { grid-template-columns:1fr; } }
+    fieldset { border:1px solid #ccc; border-radius:8px; padding:12px; margin:0; display:flex; flex-direction:column; gap:8px; }
+    legend { font-weight:600; padding:0 6px; }
+    .helper { font-size:13px; color:#555; margin-top:-6px; }
+    md-outlined-text-field, md-outlined-select, md-filled-button { width:100%; }
+    .pill { display:inline-flex; align-items:center; gap:8px; padding:10px 12px; border-radius:10px; background: rgba(11,107,80,.12); }
+    .radio-group { display:flex; flex-direction:column; gap:6px; }
+
+    /* DOB layout (compact, reliable) */
+    .dob-row { display:flex; gap:12px; align-items:flex-start; flex-wrap:nowrap; }
+    .dob-row md-outlined-select, .dob-row md-outlined-text-field { width:96px !important; max-width:96px !important; flex:0 0 96px; display:block; }
+    @media(max-width:720px){ .dob-row { flex-wrap:wrap; } .dob-row md-outlined-select, .dob-row md-outlined-text-field { width:100% !important; max-width:100% !important; flex:1 1 auto; } }
+
+    /* Progress indicator */
+    .progress { display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:16px; }
+    .circle { width:28px; height:28px; border-radius:50%; background:#ccc; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:600; }
+    .line { flex:0 0 40px; height:4px; background:#ccc; }
+    .active { background:#0b6b50 !important; }
+
+    /* Dialog */
+    dialog { border: none; border-radius: 12px; padding: 20px; max-width: 420px; width: 90vw; box-shadow: 0 10px 30px rgba(0,0,0,.25); }
+    dialog::backdrop { background: rgba(0,0,0,.4); }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="clinic">
+      <h1>Acme Urgent Care</h1>
+      <h2>Book your appointment</h2>
+      <p>1 Main St, Anytown, MA, 01234</p>
+      <p><b>Scheduling questions?</b></p>
+      <p>We're here for you. Call us at 123 456 7890</p>
+      <p>For immigration medical exams, please call us first. Thank you!</p>
+    </section>
+
+    <section class="card" aria-label="Appointment scheduling">
+      <!-- Progress -->
+      <div class="progress">
+        <div id="circle1" class="circle">1</div>
+        <div id="line1" class="line"></div>
+        <div id="circle2" class="circle">2</div>
+        <div id="line2" class="line"></div>
+        <div id="circle3" class="circle">3</div>
+      </div>
+
+      <!-- Step 1 -->
+      <div id="step1">
+        <h2>Select a Date</h2>
+        <div class="calendar-header">
+          <button id="prev" type="button" aria-label="Previous month">◀</button>
+          <div id="monthLabel"></div>
+          <button id="next" type="button" aria-label="Next month">▶</button>
+        </div>
+        <div class="weekday-row" aria-hidden="true">
+          <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+        </div>
+        <div id="days" class="days-grid"></div>
+      </div>
+
+      <!-- Step 2 -->
+      <div id="step2" hidden>
+        <md-text-button id="backBtn">← Back</md-text-button>
+        <h2>Select a Time</h2>
+        <div id="slotDateHeading"></div>
+        <div id="slotList" class="slot-list" role="radiogroup"></div>
+      </div>
+
+      <!-- Step 3 -->
+      <div id="step3" hidden>
+        <md-text-button id="backBtn2">← Back</md-text-button>
+        <h2>Enter Your Details</h2>
+        <div class="pill" id="apptSummary" aria-live="polite"></div>
+        <form id="patientForm" class="form" novalidate>
+          <div class="grid-2" style="margin-top:12px;">
+            <md-outlined-text-field id="firstName" label="Legal First Name *" required></md-outlined-text-field>
+            <md-outlined-text-field id="lastName" label="Legal Last Name *" required></md-outlined-text-field>
+          </div>
+
+          <md-outlined-text-field id="email" type="email" label="Email *" required></md-outlined-text-field>
+
+          <div class="grid-2">
+            <md-outlined-text-field id="countryCode" label="Country code" value="+1"></md-outlined-text-field>
+            <md-outlined-text-field id="phone" label="Cell Phone Number *" placeholder="(555) 555-5555" required></md-outlined-text-field>
+          </div>
+          <p class="helper">By entering your phone number, you consent to receive messages for this event via SMS. Message and data rates may apply. Reply STOP to opt out.</p>
+
+          <fieldset>
+            <legend>Address *</legend>
+            <md-outlined-text-field id="addr1" label="Street Address" required></md-outlined-text-field>
+            <md-outlined-text-field id="addr2" label="Apt, Suite, Unit (optional)"></md-outlined-text-field>
+            <div class="grid-2">
+              <md-outlined-text-field id="city" label="City" required></md-outlined-text-field>
+              <md-outlined-select id="state" label="Select State" required>
+                <md-select-option value="AL"><div slot="headline">AL</div></md-select-option>
+                <md-select-option value="AK"><div slot="headline">AK</div></md-select-option>
+                <md-select-option value="AZ"><div slot="headline">AZ</div></md-select-option>
+                <md-select-option value="AR"><div slot="headline">AR</div></md-select-option>
+                <md-select-option value="CA"><div slot="headline">CA</div></md-select-option>
+                <md-select-option value="CO"><div slot="headline">CO</div></md-select-option>
+                <md-select-option value="CT"><div slot="headline">CT</div></md-select-option>
+                <md-select-option value="DE"><div slot="headline">DE</div></md-select-option>
+                <md-select-option value="FL"><div slot="headline">FL</div></md-select-option>
+                <md-select-option value="GA"><div slot="headline">GA</div></md-select-option>
+                <md-select-option value="HI"><div slot="headline">HI</div></md-select-option>
+                <md-select-option value="ID"><div slot="headline">ID</div></md-select-option>
+                <md-select-option value="IL"><div slot="headline">IL</div></md-select-option>
+                <md-select-option value="IN"><div slot="headline">IN</div></md-select-option>
+                <md-select-option value="IA"><div slot="headline">IA</div></md-select-option>
+                <md-select-option value="KS"><div slot="headline">KS</div></md-select-option>
+                <md-select-option value="KY"><div slot="headline">KY</div></md-select-option>
+                <md-select-option value="LA"><div slot="headline">LA</div></md-select-option>
+                <md-select-option value="ME"><div slot="headline">ME</div></md-select-option>
+                <md-select-option value="MD"><div slot="headline">MD</div></md-select-option>
+                <md-select-option value="MA"><div slot="headline">MA</div></md-select-option>
+                <md-select-option value="MI"><div slot="headline">MI</div></md-select-option>
+                <md-select-option value="MN"><div slot="headline">MN</div></md-select-option>
+                <md-select-option value="MS"><div slot="headline">MS</div></md-select-option>
+                <md-select-option value="MO"><div slot="headline">MO</div></md-select-option>
+                <md-select-option value="MT"><div slot="headline">MT</div></md-select-option>
+                <md-select-option value="NE"><div slot="headline">NE</div></md-select-option>
+                <md-select-option value="NV"><div slot="headline">NV</div></md-select-option>
+                <md-select-option value="NH"><div slot="headline">NH</div></md-select-option>
+                <md-select-option value="NJ"><div slot="headline">NJ</div></md-select-option>
+                <md-select-option value="NM"><div slot="headline">NM</div></md-select-option>
+                <md-select-option value="NY"><div slot="headline">NY</div></md-select-option>
+                <md-select-option value="NC"><div slot="headline">NC</div></md-select-option>
+                <md-select-option value="ND"><div slot="headline">ND</div></md-select-option>
+                <md-select-option value="OH"><div slot="headline">OH</div></md-select-option>
+                <md-select-option value="OK"><div slot="headline">OK</div></md-select-option>
+                <md-select-option value="OR"><div slot="headline">OR</div></md-select-option>
+                <md-select-option value="PA"><div slot="headline">PA</div></md-select-option>
+                <md-select-option value="RI"><div slot="headline">RI</div></md-select-option>
+                <md-select-option value="SC"><div slot="headline">SC</div></md-select-option>
+                <md-select-option value="SD"><div slot="headline">SD</div></md-select-option>
+                <md-select-option value="TN"><div slot="headline">TN</div></md-select-option>
+                <md-select-option value="TX"><div slot="headline">TX</div></md-select-option>
+                <md-select-option value="UT"><div slot="headline">UT</div></md-select-option>
+                <md-select-option value="VT"><div slot="headline">VT</div></md-select-option>
+                <md-select-option value="VA"><div slot="headline">VA</div></md-select-option>
+                <md-select-option value="WA"><div slot="headline">WA</div></md-select-option>
+                <md-select-option value="WV"><div slot="headline">WV</div></md-select-option>
+                <md-select-option value="WI"><div slot="headline">WI</div></md-select-option>
+                <md-select-option value="WY"><div slot="headline">WY</div></md-select-option>
+              </md-outlined-select>
+            </div>
+            <div class="grid-2">
+              <md-outlined-select id="country" label="Country" required>
+                <md-select-option value="US" selected><div slot="headline">US</div></md-select-option>
+              </md-outlined-select>
+              <md-outlined-text-field id="zip" label="ZIP" required></md-outlined-text-field>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Legal Sex *</legend>
+            <div class="radio-group">
+              <label><md-radio name="sex" value="M"></md-radio> Male</label>
+              <label><md-radio name="sex" value="F"></md-radio> Female</label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Date of Birth *</legend>
+            <div class="dob-row" role="group" aria-label="Date of birth">
+              <md-outlined-select id="dobMonth" label="Month" required></md-outlined-select>
+              <md-outlined-select id="dobDay" label="Day" required></md-outlined-select>
+              <md-outlined-text-field id="dobYear" label="Year" inputmode="numeric" pattern="\\d{4}" required></md-outlined-text-field>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Reason for Visit *</legend>
+            <div class="radio-group">
+              <label><md-radio name="reason" value="urgent"></md-radio> In‑Person Urgent Care Visit</label>
+              <label><md-radio name="reason" value="primary"></md-radio> Primary Care (Please call to schedule)</label>
+              <label><md-radio name="reason" value="sports"></md-radio> Sports Physical</label>
+              <label><md-radio name="reason" value="labs"></md-radio> Required Bloodwork/Imaging</label>
+              <label><md-radio name="reason" value="tele"></md-radio> Video Telehealth Appointment</label>
+              <label><md-radio name="reason" value="immigration"></md-radio> Immigration Exam (Call First)</label>
+            </div>
+          </fieldset>
+
+          <label for="insurance" class="section-title" style="font-size:14px;font-weight:600">What is the name of your insurance (include secondary insurance, if applicable)? If you don't have insurance, put none.</label>
+          <md-outlined-text-field id="insurance" label="Insurance name *" required></md-outlined-text-field>
+
+          <label for="details" class="section-title" style="font-size:14px;font-weight:600">If visiting for urgent care, briefly describe what's wrong:</label>
+          <md-outlined-text-field id="details" label="Details (optional)" rows="2" textarea></md-outlined-text-field>
+
+          <md-filled-button id="scheduleBtn" disabled>Schedule Appointment</md-filled-button>
+        </form>
+      </div>
+
+      <!-- Snackbar (kept, not used) and simple confirmation dialog -->
+      <md-snackbar id="snackbar" closable></md-snackbar>
+      <dialog id="confirmDialog" aria-labelledby="confirmTitle" aria-describedby="confirmDesc">
+        <h3 id="confirmTitle" style="margin:0 0 8px;">Appointment scheduled</h3>
+        <p id="confirmDesc" style="margin:0 0 16px;">Your appointment for <span id="confirmAppt"></span> has been scheduled (mock).</p>
+        <div style="display:flex; justify-content:flex-end; gap:8px;">
+          <button id="confirmClose" type="button">Close</button>
+        </div>
+      </dialog>
+    </section>
+  </main>
+
+  <script>
+    // ===== Element refs =====
+    const monthLabel=document.getElementById('monthLabel');
+    const daysGrid=document.getElementById('days');
+    const slotList=document.getElementById('slotList');
+    const slotDateHeading=document.getElementById('slotDateHeading');
+    const apptSummary=document.getElementById('apptSummary');
+    const prevBtn=document.getElementById('prev');
+    const nextBtn=document.getElementById('next');
+    const backBtn=document.getElementById('backBtn');
+    const backBtn2=document.getElementById('backBtn2');
+
+    // Step 3 refs
+    const patientForm = document.getElementById('patientForm');
+    const scheduleBtn = document.getElementById('scheduleBtn');
+    const dobMonthEl = document.getElementById('dobMonth');
+    const dobDayEl   = document.getElementById('dobDay');
+    const dobYearEl  = document.getElementById('dobYear');
+
+    // ===== State =====
+    let viewYear=2025, viewMonth=7; // August 2025
+    window.selectedDateISO=null;
+    window.selectedSlot=null;
+
+    // ===== Helpers =====
+    function formatToAmPm(timeStr) {
+      const [hStr, mStr] = String(timeStr).split(":");
+      let h = parseInt(hStr, 10);
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      h = h % 12; if (h === 0) h = 12;
+      return `${h}:${mStr || '00'} ${ampm}`;
+    }
+
+    function updateProgress(n){
+      const c1=document.getElementById('circle1');
+      const c2=document.getElementById('circle2');
+      const c3=document.getElementById('circle3');
+      const l1=document.getElementById('line1');
+      const l2=document.getElementById('line2');
+      [c1,c2,c3,l1,l2].forEach(el=>el.classList.remove('active'));
+      if(n>=1){ c1.classList.add('active'); }
+      if(n>=2){ c2.classList.add('active'); l1.classList.add('active'); }
+      if(n>=3){ c3.classList.add('active'); l2.classList.add('active'); }
+    }
+
+    function gotoStep(n){
+      document.getElementById('step1').hidden = n!==1;
+      document.getElementById('step2').hidden = n!==2;
+      document.getElementById('step3').hidden = n!==3;
+      updateProgress(n);
+    }
+
+    // ===== Calendar =====
+    function renderMonth(){
+      monthLabel.textContent=new Date(viewYear,viewMonth,1).toLocaleDateString(undefined,{month:'long',year:'numeric'});
+      const firstWeekday=new Date(viewYear,viewMonth,1).getDay();
+      const daysInMonth=new Date(viewYear,viewMonth+1,0).getDate();
+      daysGrid.innerHTML='';
+      for(let i=0;i<firstWeekday;i++){daysGrid.appendChild(document.createElement('div'))}
+      for(let d=1;d<=daysInMonth;d++){
+        const btn=document.createElement('button');
+        btn.type='button';
+        btn.textContent=d;btn.className='daybtn';
+        btn.setAttribute('aria-label', new Date(viewYear,viewMonth,d).toDateString());
+        btn.addEventListener('click',()=>{
+          window.selectedDateISO=new Date(viewYear,viewMonth,d).toISOString().slice(0,10);
+          renderSlots(window.selectedDateISO);
+          gotoStep(2);
+        });
+        daysGrid.appendChild(btn);
+      }
+    }
+
+    prevBtn.addEventListener('click',()=>{viewMonth--;if(viewMonth<0){viewMonth=11;viewYear--;}renderMonth()});
+    nextBtn.addEventListener('click',()=>{viewMonth++;if(viewMonth>11){viewMonth=0;viewYear++;}renderMonth()});
+    backBtn.addEventListener('click',()=>gotoStep(1));
+    backBtn2.addEventListener('click',()=>gotoStep(2));
+
+    // ===== Slots =====
+    function renderSlots(iso){
+      slotDateHeading.textContent=new Date(iso).toLocaleDateString(undefined,{weekday:'long', year:'numeric', month:'long', day:'numeric'});
+      slotList.innerHTML='';
+      for(let h=8;h<=17;h++){
+        const raw=h+':00';
+        const t=formatToAmPm(raw);
+        const b=document.createElement('button');b.className='slot-btn';b.innerHTML='<span class="txt">'+t+'</span>';
+        b.addEventListener('click',()=>{
+          window.selectedSlot=t;
+          apptSummary.textContent=new Date(iso).toLocaleDateString(undefined,{weekday:'long', year:'numeric', month:'long', day:'numeric'})+' at '+t;
+          gotoStep(3);
+          updateValidity();
+        });
+        slotList.appendChild(b);
+      }
+    }
+
+    // ===== DOB population =====
+    function makeOption(val){
+      const opt = document.createElement('md-select-option');
+      opt.value = String(val);
+      const div = document.createElement('div');
+      div.slot = 'headline';
+      div.textContent = String(val);
+      opt.appendChild(div);
+      return opt;
+    }
+    function daysInMonth(y,m){
+      const year = Number(y) || new Date().getFullYear();
+      const month = Number(m) || 1; // 1..12
+      return new Date(year, month, 0).getDate();
+    }
+    function populateMonths(){
+      if(!dobMonthEl) return;
+      dobMonthEl.innerHTML='';
+      for(let m=1;m<=12;m++) dobMonthEl.appendChild(makeOption(m));
+      if(!dobMonthEl.value) dobMonthEl.value='1';
+    }
+    function populateDays(){
+      if(!dobDayEl) return;
+      const y = dobYearEl ? dobYearEl.value : '';
+      const m = dobMonthEl ? dobMonthEl.value : '1';
+      const max = daysInMonth(y,m);
+      const keep = dobDayEl.value;
+      dobDayEl.innerHTML='';
+      for(let d=1; d<=max; d++) dobDayEl.appendChild(makeOption(d));
+      if(keep && Number(keep)<=max) dobDayEl.value=keep;
+    }
+
+    // ===== Validation to enable Schedule =====
+    function gv(id){ const el=document.getElementById(id); return (el && el.value ? String(el.value).trim() : ''); }
+    function rc(name){ let ok=false; document.querySelectorAll('md-radio[name="'+name+'"]').forEach(r=>{ if(r.checked) ok=true; }); return ok; }
+    function updateValidity(){
+      if(!scheduleBtn) return;
+      const ok = gv('firstName') && gv('lastName') && /.+@.+\..+/.test(gv('email')) &&
+                 gv('phone') && gv('addr1') && gv('city') && gv('state') && gv('zip') && gv('insurance') &&
+                 rc('sex') && rc('reason') && gv('dobMonth') && gv('dobDay') && /^\d{4}$/.test(gv('dobYear')) &&
+                 window.selectedDateISO && window.selectedSlot;
+      scheduleBtn.disabled = !ok;
+    }
+
+    // ===== Dialog behavior =====
+    const dlg = document.getElementById('confirmDialog');
+    const closeBtn = document.getElementById('confirmClose');
+    closeBtn?.addEventListener('click',()=> dlg?.close());
+    scheduleBtn?.addEventListener('click', function(e){
+      e.preventDefault();
+      if (scheduleBtn.disabled) return;
+      const apptTxt = apptSummary?.textContent || (window.selectedDateISO ? new Date(window.selectedDateISO).toLocaleDateString(undefined,{weekday:'long', year:'numeric', month:'long', day:'numeric'}) + (window.selectedSlot?(' at '+window.selectedSlot):'') : 'your selected time');
+      const tgt = document.getElementById('confirmAppt');
+      if (tgt) tgt.textContent = apptTxt;
+      if (dlg && typeof dlg.showModal === 'function') dlg.showModal();
+    });
+
+    // ===== Init =====
+    renderMonth();
+    gotoStep(1);
+    updateValidity();
+    populateMonths();
+    populateDays();
+    dobMonthEl?.addEventListener('change', ()=>{ populateDays(); updateValidity(); });
+    dobYearEl?.addEventListener('input', ()=>{ populateDays(); updateValidity(); });
+    patientForm?.addEventListener('input', updateValidity);
+    patientForm?.addEventListener('change', updateValidity);
+  </script>
+</body>
+</html>
