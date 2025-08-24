@@ -18,7 +18,7 @@
     main.app { display:grid; grid-template-columns:minmax(280px,420px) 1fr; gap:28px; padding:20px; max-width:1200px; margin:auto; }
     @media(max-width:900px){ main.app { grid-template-columns:1fr; } }
 
-    .card { background:#fff; border-radius:16px; padding:24px; box-shadow:0 2px 8px rgba(0,0,0,.08); display:flex; flex-direction:column; gap:20px; }
+    .card { background:#fff; border-radius:16px; padding:24px; box-shadow:0 2px 8px rgba(0,0,0,.08); display:flex; flex-direction:column; gap:10px; }
 
     /* Calendar */
     .calendar-header { display:grid; grid-template-columns:40px 1fr 40px; align-items:center; gap:8px; }
@@ -28,8 +28,8 @@
     .daybtn[disabled]{opacity:.35;cursor:not-allowed}
 
     /* Slots */
-    .slot-list { display:grid; gap:10px; max-height:60vh; overflow:auto; }
-    .slot-btn { all:unset; display:block; width:100%; cursor:pointer; background:#fff; border-radius:12px; padding:12px 16px; border:1px solid rgba(0,0,0,.15); box-shadow:0 1px 0 rgba(0,0,0,.08); }
+    .slot-list { display:grid; gap:10px; max-height:60vh; overflow-y:auto; overflow-x:hidden; }
+    .slot-btn { all:unset; display:block; width:100%; max-width:100%; box-sizing:border-box; cursor:pointer; background:#fff; border-radius:12px; padding:10px 12px; border:1px solid rgba(0,0,0,.15); box-shadow:0 1px 0 rgba(0,0,0,.08); }
     .slot-btn .txt { font-weight:600; color: #0b6b50; }
     .slot-btn:hover { background: rgba(11,107,80,.06); }
     .slot-btn[aria-checked="true"]{ border-color:#0b6b50; box-shadow:0 0 0 2px rgba(11,107,80,.25) inset; }
@@ -45,15 +45,20 @@
     .pill { display:inline-flex; align-items:center; gap:8px; padding:10px 12px; border-radius:10px; background: rgba(11,107,80,.12); }
     .radio-group { display:flex; flex-direction:column; gap:6px; }
 
-    /* DOB layout (compact, reliable) */
+    /* DOB layout (flex, compact) */
     .dob-row { display:flex; gap:12px; align-items:flex-start; flex-wrap:nowrap; }
-    .dob-row md-outlined-select, .dob-row md-outlined-text-field { width:96px !important; max-width:96px !important; flex:0 0 96px; display:block; }
-    @media(max-width:720px){ .dob-row { flex-wrap:wrap; } .dob-row md-outlined-select, .dob-row md-outlined-text-field { width:100% !important; max-width:100% !important; flex:1 1 auto; } }
+    .dob-row md-outlined-select,
+    .dob-row md-outlined-text-field { width:96px !important; max-width:96px !important; flex:0 0 96px; display:block; }
+    #dobYear { width:120px !important; max-width:120px !important; }
+    @media(max-width:720px){
+      .dob-row { flex-wrap:wrap; }
+      .dob-row md-outlined-select, .dob-row md-outlined-text-field { width:100% !important; max-width:100% !important; flex:1 1 auto; }
+    }
 
     /* Phone row wrappers for robust sizing */
-    .phone-row { display: grid; grid-template-columns: 160px 1fr; column-gap: 60px; align-items: start; }
+    .phone-row { display:grid; grid-template-columns: 160px minmax(0, 360px); column-gap: 60px; align-items: start; }
     .phone-cell { min-width: 0; display:block; }
-    .phone-cell--code { width:160px; min-width:160px; overflow:visible; padding-top:2px; padding-right:2px; }
+    .phone-cell--code { width:160px; min-width:160px; overflow:visible; padding-top:2px; padding-right:6px; }
     .phone-cell--num  { min-width:0; max-width:360px; }
     .phone-row md-outlined-select,
     .phone-row md-outlined-text-field { width:100%; display:block; box-sizing:border-box; }
@@ -64,14 +69,10 @@
     }
 
     /* Progress indicator */
-    .progress { display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:16px; }
+    .progress { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
     .circle { width:28px; height:28px; border-radius:50%; background:#ccc; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:600; }
     .line { flex:0 0 40px; height:4px; background:#ccc; }
     .active { background:#0b6b50 !important; }
-
-    /* Dialog */
-    dialog { border: none; border-radius: 12px; padding: 20px; max-width: 420px; width: 90vw; box-shadow: 0 10px 30px rgba(0,0,0,.25); }
-    dialog::backdrop { background: rgba(0,0,0,.4); }
     /* Narrow, aligned phone row without changing markup */
 
     /* Inline error text styling */
@@ -80,12 +81,6 @@
       font-size:12px;
       margin-top:4px;
     }
-    /* Align phone row contents vertically */
-      /* Align phone row contents (stack label + control + helper) */
-    .phone-row .phone-cell { display:block; }
-    .phone-row .phone-cell > md-outlined-select,
-    .phone-row .phone-cell > md-outlined-text-field { width:100%; }
-    /* Progress row with back button */
     .progress-row { display:grid; grid-template-columns: 1fr auto 1fr; align-items:center; column-gap:12px; }
     .progress-row #backTop { justify-self:start; }
     .progress-row .progress { justify-self:center; }
@@ -100,6 +95,53 @@
     .brand-sub { display:block; font-weight:700; font-size:14px; color:#0b6b50; letter-spacing:.2px; }
     /* sr-only utility for accessible hidden heading */
     .sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);border:0}
+    /* Tighter spacing between progress header and step titles */
+    .card h2 { margin-top: 6px; }
+    /* Step title hierarchy: Step 1 slightly larger than others */
+    #step1 > h2 { font-size: clamp(20px, 2.2vw, 24px); }
+    #step2 > h2, #step3 > h2, #step4 > h2 { font-size: clamp(18px, 2vw, 22px); }
+
+    /* Tighter mobile spacing without affecting desktop */
+    @media (max-width: 720px) {
+      .card { gap: 8px; padding: 20px; }
+      .progress { margin-bottom: 4px; }
+      .card h2 { margin-top: 4px; }
+    }
+    /* Make the optional Details textarea resizable */
+    textarea#details {
+      width: 100%;
+      min-height: 64px;
+      max-height: 50vh;
+      resize: vertical; /* user can drag bottom-right to resize */
+      padding: 10px 12px;
+      border: 1px solid rgba(0,0,0,.2);
+      border-radius: 12px;
+      background: #fff;
+      font: inherit;
+      box-sizing: border-box;
+    }
+    textarea#details:focus { outline: 2px solid rgba(11,107,80,.6); outline-offset: 2px; }
+    /* Confirmation view styles */
+    .confirm{display:grid;place-items:center;gap:14px;margin-top:8px;}
+    .confirm-icon{width:56px;height:56px;border-radius:50%;background:rgba(11,107,80,.12);display:grid;place-items:center;}
+    .confirm h2{margin:6px 0 0;}
+    .confirm .lead{margin:0 0 8px;}
+    .confirm-card{width:min(560px,100%);background:#f6f8f7;border:1px solid rgba(0,0,0,.08);border-radius:12px;padding:14px;}
+    .confirm-card .row{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;}
+    .confirm-card .row:last-child{margin-bottom:0;}
+    .confirm-banner{width:min(560px,100%);background:rgba(11,107,80,.1);border-radius:8px;padding:10px;text-align:center;}
+    /* Confirmation view styles */
+    .confirm-icon span{ font-size:26px; color:#0b6b50; }
+    .confirm-card .helper{ margin:0 0 2px; }
+    .confirm-card .value{ font-weight:600; }
+    /* Graceful focus ring for step titles */
+    .card h2:focus { outline: none; }
+    .card h2:focus-visible {
+      outline: 2px solid rgba(11,107,80,.6);
+      outline-offset: 2px;
+      border-radius: 6px;
+      box-shadow: 0 0 0 4px rgba(11,107,80,.12);
+    }
   </style>
 </head>
 <body>
@@ -163,16 +205,14 @@
 
       <!-- Step 2 -->
       <div id="step2" hidden>
-        <md-text-button id="backBtn" style="display:none">← Back</md-text-button>
-        <h2>Select a Time</h2>
+                <h2>Select a Time</h2>
         <div id="slotDateHeading"></div>
-        <div id="slotList" class="slot-list" role="radiogroup"></div>
+        <div id="slotList" class="slot-list" ></div>
       </div>
 
       <!-- Step 3 -->
       <div id="step3" hidden>
-        <md-text-button id="backBtn2" style="display:none">← Back</md-text-button>
-        <h2>Enter Your Details</h2>
+                <h2>Enter Your Details</h2>
         <div class="pill" id="apptSummary" aria-live="polite"></div>
         <form id="patientForm" class="form" novalidate>
           <div class="grid-2">
@@ -205,7 +245,6 @@
                   <md-select-option value="+41"><div slot="headline">+41 (Switzerland)</div></md-select-option>
                   <md-select-option value="+44"><div slot="headline">+44 (United Kingdom)</div></md-select-option>
                 </md-outlined-select>
-              <p id="countryCodeError" class="error-msg" aria-live="polite">Select country code</p>
               </div>
               <div class="phone-cell phone-cell--num">
                 <md-outlined-text-field id="phone" label="Cell Phone Number *" placeholder="(555) 555-5555" required></md-outlined-text-field>
@@ -298,11 +337,55 @@
           <fieldset>
             <legend>Date of Birth *</legend>
             <div class="dob-row" role="group" aria-label="Date of birth">
-              <md-outlined-select id="dobMonth" label="Month" required></md-outlined-select>
-              <md-outlined-select id="dobDay" label="Day" required></md-outlined-select>
+              <md-outlined-select id="dobMonth" label="Month" required>
+                <md-select-option value="1"><div slot="headline">1</div></md-select-option>
+                <md-select-option value="2"><div slot="headline">2</div></md-select-option>
+                <md-select-option value="3"><div slot="headline">3</div></md-select-option>
+                <md-select-option value="4"><div slot="headline">4</div></md-select-option>
+                <md-select-option value="5"><div slot="headline">5</div></md-select-option>
+                <md-select-option value="6"><div slot="headline">6</div></md-select-option>
+                <md-select-option value="7"><div slot="headline">7</div></md-select-option>
+                <md-select-option value="8"><div slot="headline">8</div></md-select-option>
+                <md-select-option value="9"><div slot="headline">9</div></md-select-option>
+                <md-select-option value="10"><div slot="headline">10</div></md-select-option>
+                <md-select-option value="11"><div slot="headline">11</div></md-select-option>
+                <md-select-option value="12"><div slot="headline">12</div></md-select-option>
+              </md-outlined-select>
+              <md-outlined-select id="dobDay" label="Day" required>
+                <md-select-option value="1"><div slot="headline">1</div></md-select-option>
+                <md-select-option value="2"><div slot="headline">2</div></md-select-option>
+                <md-select-option value="3"><div slot="headline">3</div></md-select-option>
+                <md-select-option value="4"><div slot="headline">4</div></md-select-option>
+                <md-select-option value="5"><div slot="headline">5</div></md-select-option>
+                <md-select-option value="6"><div slot="headline">6</div></md-select-option>
+                <md-select-option value="7"><div slot="headline">7</div></md-select-option>
+                <md-select-option value="8"><div slot="headline">8</div></md-select-option>
+                <md-select-option value="9"><div slot="headline">9</div></md-select-option>
+                <md-select-option value="10"><div slot="headline">10</div></md-select-option>
+                <md-select-option value="11"><div slot="headline">11</div></md-select-option>
+                <md-select-option value="12"><div slot="headline">12</div></md-select-option>
+                <md-select-option value="13"><div slot="headline">13</div></md-select-option>
+                <md-select-option value="14"><div slot="headline">14</div></md-select-option>
+                <md-select-option value="15"><div slot="headline">15</div></md-select-option>
+                <md-select-option value="16"><div slot="headline">16</div></md-select-option>
+                <md-select-option value="17"><div slot="headline">17</div></md-select-option>
+                <md-select-option value="18"><div slot="headline">18</div></md-select-option>
+                <md-select-option value="19"><div slot="headline">19</div></md-select-option>
+                <md-select-option value="20"><div slot="headline">20</div></md-select-option>
+                <md-select-option value="21"><div slot="headline">21</div></md-select-option>
+                <md-select-option value="22"><div slot="headline">22</div></md-select-option>
+                <md-select-option value="23"><div slot="headline">23</div></md-select-option>
+                <md-select-option value="24"><div slot="headline">24</div></md-select-option>
+                <md-select-option value="25"><div slot="headline">25</div></md-select-option>
+                <md-select-option value="26"><div slot="headline">26</div></md-select-option>
+                <md-select-option value="27"><div slot="headline">27</div></md-select-option>
+                <md-select-option value="28"><div slot="headline">28</div></md-select-option>
+                <md-select-option value="29"><div slot="headline">29</div></md-select-option>
+                <md-select-option value="30"><div slot="headline">30</div></md-select-option>
+                <md-select-option value="31"><div slot="headline">31</div></md-select-option>
+              </md-outlined-select>
               <md-outlined-text-field id="dobYear" label="Year" inputmode="numeric" pattern="\d{4}" required></md-outlined-text-field>
             </div>
-            <p id="dobMonthError" class="error-msg" aria-live="polite"></p>
           </fieldset>
 
           <fieldset>
@@ -323,7 +406,7 @@
           <md-outlined-text-field id="insurance" label="Insurance name *" required></md-outlined-text-field>
 
           <label for="details" class="section-title" style="font-size:14px;font-weight:600">If visiting for urgent care, briefly describe what's wrong:</label>
-          <md-outlined-text-field id="details" label="Details (optional)" rows="2" textarea></md-outlined-text-field>
+          <textarea id="details" rows="3" placeholder="Optional details"></textarea>
 
           <md-filled-button id="scheduleBtn" disabled>Schedule Appointment</md-filled-button>
         </form>
@@ -331,42 +414,37 @@
 
       <!-- Step 4: Confirmation -->
       <div id="step4" hidden>
-        <div class="confirm" style="display:grid;place-items:center;gap:14px;margin-top:8px;">
-          <div class="confirm-icon" aria-hidden="true" style="width:56px;height:56px;border-radius:50%;background:rgba(11,107,80,.12);display:grid;place-items:center;">
-            <span style="font-size:26px;color:#0b6b50;">✓</span>
+        <div class="confirm">
+          <div class="confirm-icon" aria-hidden="true">
+            <span>✓</span>
           </div>
-          <h2 style="margin:6px 0 0;">Appointment Scheduled!</h2>
-          <p class="helper" style="margin:0 0 8px;">Your appointment has been successfully scheduled.</p>
+          <h2>Appointment Scheduled!</h2>
+          <p class="helper lead">Your appointment has been successfully scheduled.</p>
 
-          <div class="confirm-card" style="width:min(560px,100%);background:#f6f8f7;border:1px solid rgba(0,0,0,.08);border-radius:12px;padding:14px;">
-            <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;">
+          <div class="confirm-card">
+            <div class="row">
               <span aria-hidden="true">📅</span>
               <div>
-                <div class="helper" style="margin:0 0 2px;">Date &amp; Time</div>
-                <div id="confirmWhen" style="font-weight:600;">&nbsp;</div>
+                <div class="helper">Date &amp; Time</div>
+                <div id="confirmWhen" class="value">&nbsp;</div>
               </div>
             </div>
-            <div style="display:flex;gap:10px;align-items:flex-start;">
+            <div class="row">
               <span aria-hidden="true">✉️</span>
               <div>
-                <div class="helper" style="margin:0 0 2px;">Confirmation sent to</div>
-                <div id="confirmEmail" style="font-weight:600;">&nbsp;</div>
+                <div class="helper">Confirmation sent to</div>
+                <div id="confirmEmail" class="value">&nbsp;</div>
               </div>
             </div>
           </div>
 
-          <div class="confirm-banner" style="width:min(560px,100%);background:rgba(11,107,80,.1);border-radius:8px;padding:10px;text-align:center;">
+          <div class="confirm-banner">
             You'll receive a confirmation email with the appointment details.
           </div>
 
           <md-text-button id="scheduleAnother" type="button">📅 Schedule Another Appointment</md-text-button>
         </div>
-      </div>
-
-      <!-- Snackbar (kept, not used) and simple confirmation dialog -->
-      <md-snackbar id="snackbar" closable></md-snackbar>
-      
-    </section>
+      </div></section>
   </main>
 
   <script>
@@ -378,9 +456,7 @@
     const apptSummary=document.getElementById('apptSummary');
     const prevBtn=document.getElementById('prev');
     const nextBtn=document.getElementById('next');
-    const backBtn=document.getElementById('backBtn');
-    const backBtn2=document.getElementById('backBtn2');
-    const backTop=document.getElementById('backTop');
+            const backTop=document.getElementById('backTop');
     let currentStep = 1;
 
     // Step 4 refs
@@ -419,13 +495,26 @@
     }
 
     // Friendly full-date formatter used across UI
-    function friendlyDate(d){ return new Date(d).toLocaleDateString(undefined,{weekday:'long', year:'numeric', month:'long', day:'numeric'}); }
+    
+
+    // Local date helpers (avoid UTC shifts for YYYY-MM-DD)
+    const DATE_FMT = { weekday:'long', year:'numeric', month:'long', day:'numeric' };
+    function parseYMDLocal(ymd){
+      const [y,m,d] = ymd.split('-').map(Number);
+      return new Date(y, m-1, d);
+    }
+    function friendlyDateLocal(ymdOrDate){
+      if (typeof ymdOrDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(ymdOrDate)){
+        return parseYMDLocal(ymdOrDate).toLocaleDateString(undefined, DATE_FMT);
+      }
+      return new Date(ymdOrDate).toLocaleDateString(undefined, DATE_FMT);
+    }
 
     // Mock availability: only from today onwards
     function mockDayHasAvailability(dateObj){
       // Only allow availability for today or future dates
-      const today = new Date(); today.setHours(0,0,0,0);
       const d = new Date(dateObj); d.setHours(0,0,0,0);
+      const today = new Date(); today.setHours(0,0,0,0);
       if (DISABLE_WEEKENDS && [0,6].includes(d.getDay())) return false;
       if (d < today) return false;
       // Simple deterministic pattern so not every day is available
@@ -435,7 +524,7 @@
 
     // 15‑minute slots within business hours; filter to ~50% available; today starts from next quarter hour
     function generateSlotsForDate(iso){
-      const date = new Date(iso + 'T00:00:00');
+      const date = parseYMDLocal(iso);
       const now  = new Date();
       const start = new Date(date); start.setHours(BUSINESS_START_HOUR, 0, 0, 0);
       const end   = new Date(date); end.setHours(BUSINESS_END_HOUR,   0, 0, 0);
@@ -456,6 +545,112 @@
         .map(dt => formatToAmPm(`${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`));
       return list;
     }
+
+    function renderSlots(iso){
+      // Render the Step 2 list of time slots for a given YYYY-MM-DD d
+      slotDateHeading.textContent = friendlyDateLocal(iso);
+      slotList.innerHTML = '';
+
+      const slots = generateSlotsForDate(iso);
+      if (!slots.length){
+        const p = document.createElement('p');
+        p.className = 'helper';
+        p.textContent = 'No times remaining for this date.';
+        slotList.appendChild(p);
+        return;
+      }
+
+      slots.forEach((t) => {
+        const b = document.createElement('button');
+        b.className = 'slot-btn';
+        b.innerHTML = '<span class="txt">' + t + '</span>';
+        b.addEventListener('click', () => {
+          window.selectedSlot = t;
+          apptSummary.textContent = friendlyDateLocal(iso) + ' at ' + t;
+          gotoStep(3);
+          if (typeof updateValidity === 'function') updateValidity();
+        });
+        slotList.appendChild(b);
+      });
+    }
+
+// Step 3 helpers: populate DOB selects and validate form (Canvas-safe)
+function daysInMonth(y,m){ const yy=Number(y)||new Date().getFullYear(); const mm=(Number(m)||1)-1; return new Date(yy,mm+1,0).getDate(); }
+function populateMonths(){ /* pre-populated in HTML */ }
+
+function capDaysForMonthYear(){
+  const dayEl = document.getElementById('dobDay');
+  const yearEl = document.getElementById('dobYear');
+  const monthEl = document.getElementById('dobMonth');
+  if(!dayEl) return;
+  const y = (yearEl?.value || new Date().getFullYear());
+  const m = (monthEl?.value || 1);
+  const max = daysInMonth(y,m);
+  // Disable days beyond max
+  const opts = Array.from(dayEl.querySelectorAll('md-select-option'));
+  opts.forEach((opt, idx) => {
+    const d = idx+1;
+    if (d > max) opt.setAttribute('disabled','');
+    else opt.removeAttribute('disabled');
+  });
+  if (dayEl.value && Number(dayEl.value) > max) dayEl.value = '';
+}
+
+    
+function gv(id){ const el=document.getElementById(id); return (el && el.value ? String(el.value).trim() : ''); }
+function setFieldError(id, ok, msg){
+  const el = document.getElementById(id);
+  if(!el) return;
+  if(ok){ el.removeAttribute('error'); el.removeAttribute('error-text'); }
+  else { el.setAttribute('error',''); el.setAttribute('error-text', msg); }
+}
+function setTextError(id, ok, msg){
+  const p = document.getElementById(id);
+  if(!p) return;
+  p.textContent = ok ? '' : msg;
+}
+    
+function updateValidity(){
+  const btn = document.getElementById('scheduleBtn');
+  if(!btn) return;
+  const v = gv;
+
+  const firstOk = !!v('firstName'); setFieldError('firstName', firstOk, 'First name is required');
+  const lastOk  = !!v('lastName');  setFieldError('lastName',  lastOk,  'Last name is required');
+
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v('email')); setFieldError('email', emailOk, 'Enter a valid email');
+
+  const addrOk  = !!v('addr1'); setFieldError('addr1', addrOk, 'Street address is required');
+  const cityOk  = !!v('city');  setFieldError('city',  cityOk,  'City is required');
+  const stateOk = !!v('state'); setFieldError('state', stateOk, 'Select a state');
+
+  const zipOk = /^\d{5}(-\d{4})?$/.test(v('zip')); setFieldError('zip', zipOk, 'Enter ZIP (5 digits or ZIP+4)');
+
+  const insOk = !!v('insurance'); setFieldError('insurance', insOk, 'Enter insurance or "none"');
+
+  const sexOk = Array.from(document.querySelectorAll('md-radio[name="sex"]')).some(r => r.checked);
+  setTextError('sexError', sexOk, 'Please select Legal Sex');
+
+  const reasonOk = Array.from(document.querySelectorAll('md-radio[name="reason"]')).some(r => r.checked);
+  setTextError('reasonError', reasonOk, 'Please select a reason');
+
+  const yearOk = /^\d{4}$/.test(v('dobYear')); setFieldError('dobYear', yearOk, 'Enter a 4-digit year');
+  const monthOk = !!v('dobMonth'); setFieldError('dobMonth', monthOk, 'Select month'); const dayOk   = !!v('dobDay');   setFieldError('dobDay',   dayOk,   'Select day');
+
+  const ccVal = document.getElementById('countryCode')?.value || '';
+  const ccOk  = !!ccVal; setFieldError('countryCode', ccOk, 'Select country code'); const phoneDigits = (v('phone').replace(/\D/g,''));
+  const phoneOk = ccOk ? (ccVal === '+1' ? phoneDigits.length === 10 : phoneDigits.length >= 6) : false;
+  setFieldError('phone', phoneOk, 'Enter a valid phone number');
+
+  const stepOk = !!(window.selectedDateISO && window.selectedSlot);
+
+  const allOk = firstOk && lastOk && emailOk && addrOk && cityOk && stateOk && zipOk && insOk &&
+                sexOk && reasonOk && yearOk && monthOk && dayOk && ccOk && phoneOk && stepOk;
+  btn.disabled = !allOk;
+}
+
+
+// Initialize Step 3 once when shown
 
     function updateProgress(n){
       const c1=document.getElementById('circle1');
@@ -482,7 +677,12 @@
         if (n === 1 || n === 4){ backTop.hidden = true; backTop.style.display = 'none'; }
         else { backTop.hidden = false; backTop.style.display = 'inline-flex'; }
       }
+
       updateProgress(n);
+
+      // a11y: move focus to current step title for screen readers/keyboard users
+      const stepTitle = document.querySelector(`#step${n} > h2`);
+      if (stepTitle){ stepTitle.setAttribute('tabindex','-1'); stepTitle.focus(); }
     }
 
     // ===== Calendar =====
@@ -497,8 +697,7 @@
         const btn=document.createElement('button');
         btn.type='button';
         const dateObj = new Date(viewYear,viewMonth,d);
-        const dateMid = new Date(dateObj); dateMid.setHours(0,0,0,0);
-        const isAvail = mockDayHasAvailability(dateObj);
+                const isAvail = mockDayHasAvailability(dateObj);
         btn.textContent=d;btn.className='daybtn';
         btn.setAttribute('aria-label', dateObj.toDateString() + (isAvail ? ' — Available' : ' — Unavailable'));
         if (!isAvail) {
@@ -516,184 +715,35 @@
 
     prevBtn.addEventListener('click',()=>{viewMonth--;if(viewMonth<0){viewMonth=11;viewYear--;}renderMonth()});
     nextBtn.addEventListener('click',()=>{viewMonth++;if(viewMonth>11){viewMonth=0;viewYear++;}renderMonth()});
-    backBtn.addEventListener('click',()=>gotoStep(1));
-    backBtn2.addEventListener('click',()=>gotoStep(2));
-    backTop?.addEventListener('click', ()=>{ if (currentStep===3) gotoStep(2); else gotoStep(1); });
-    scheduleAnother?.addEventListener('click', ()=>{ window.selectedDateISO=null; window.selectedSlot=null; gotoStep(1); updateProgress(1); });
-    // Remove any legacy step-progress markup from older implementation
-    try { document.querySelectorAll('.steps, .step-node, .step-line').forEach(el=>el.remove()); } catch(_){};
-    // ===== Slots =====
-    function renderSlots(iso){
-      // Friendly date heading
-      slotDateHeading.textContent = friendlyDate(iso + 'T00:00:00');
-      slotList.innerHTML = '';
+            backTop?.addEventListener('click', ()=>{ if (currentStep===3) gotoStep(2); else gotoStep(1); });
 
-      const slots = generateSlotsForDate(iso);
-      if (!slots.length){
-        const p = document.createElement('p');
-        p.className = 'helper';
-        p.textContent = 'No times remaining for this date.';
-        slotList.appendChild(p);
-        return;
-      }
+    // Step 3 listeners (unconditional)
+    document.getElementById('dobMonth')?.addEventListener('change', ()=>{ capDaysForMonthYear(); updateValidity(); });
+    document.getElementById('dobYear')?.addEventListener('input',  ()=>{ capDaysForMonthYear(); updateValidity(); });
+    document.getElementById('patientForm')?.addEventListener('input',  updateValidity);
+    document.getElementById('patientForm')?.addEventListener('change', updateValidity);
+    document.querySelectorAll('md-radio[name="sex"], md-radio[name="reason"]').forEach(r=> r.addEventListener('change', updateValidity));
+    document.getElementById('countryCode')?.addEventListener('change', updateValidity);
+    document.getElementById('state')?.addEventListener('change', updateValidity);
 
-      slots.forEach((t)=>{
-        const b = document.createElement('button');
-        b.className = 'slot-btn';
-        b.innerHTML = '<span class="txt">'+t+'</span>';
-        b.addEventListener('click', ()=>{
-          window.selectedSlot = t;
-          apptSummary.textContent = friendlyDate(iso + 'T00:00:00') + ' at ' + t;
-          gotoStep(3);
-          updateValidity();
-        });
-        slotList.appendChild(b);
-      });
-    }
-
-    // ===== DOB population =====
-    function makeOption(val){
-      const opt = document.createElement('md-select-option');
-      opt.value = String(val);
-      const div = document.createElement('div');
-      div.slot = 'headline';
-      div.textContent = String(val);
-      opt.appendChild(div);
-      return opt;
-    }
-    function daysInMonth(y,m){
-      const year = Number(y) || new Date().getFullYear();
-      const month = Number(m) || 1; // 1..12
-      return new Date(year, month, 0).getDate();
-    }
-    function populateMonths(){
-      if(!dobMonthEl) return;
-      dobMonthEl.innerHTML='';
-      for(let m=1;m<=12;m++) dobMonthEl.appendChild(makeOption(m));
-      
-    }
-    function populateDays(){
-      if(!dobDayEl) return;
-      const y = dobYearEl ? dobYearEl.value : '';
-      const m = dobMonthEl ? dobMonthEl.value : '1';
-      const max = daysInMonth(y,m);
-      const keep = dobDayEl.value;
-      dobDayEl.innerHTML='';
-      for(let d=1; d<=max; d++) dobDayEl.appendChild(makeOption(d));
-      if(keep && Number(keep)<=max) dobDayEl.value=keep;
-    }
-
-    // ===== Validation to enable Schedule =====
-    function gv(id){ const el=document.getElementById(id); return (el && el.value ? String(el.value).trim() : ''); }
-    function rc(name){ let ok=false; document.querySelectorAll('md-radio[name="'+name+'"]').forEach(r=>{ if(r.checked) ok=true; }); return ok; }
-
-    // Helpers for inline errors
-    function setErrorById(id, ok, msg){
-      const el = document.getElementById(id);
-      if(!el) return;
-      if(ok){ el.removeAttribute('error'); el.removeAttribute('error-text'); }
-      else { el.setAttribute('error',''); el.setAttribute('error-text', msg); }
-    }
-    function setGroupError(id, ok, msg){
-      const el = document.getElementById(id);
-      if (el) el.textContent = ok ? '' : msg;
-    }
-    
-    function updateValidity(){
-      if(!scheduleBtn) return;
-    
-      const firstOk = gv('firstName').length>0; setErrorById('firstName', firstOk, 'First name is required');
-      const lastOk  = gv('lastName').length>0;  setErrorById('lastName',  lastOk,  'Last name is required');
-    
-      const emailVal = gv('email');
-      const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal);
-      setErrorById('email', emailOk, 'Enter a valid email address');
-    
-      const addrOk  = gv('addr1').length>0; setErrorById('addr1', addrOk, 'Street address is required');
-      const cityOk  = gv('city').length>0;  setErrorById('city',  cityOk,  'City is required');
-      const stateOk = gv('state').length>0; setErrorById('state', stateOk, 'Select a state');
-    
-      const zipVal = gv('zip');
-      const zipOk = /^\d{5}(-\d{4})?$/.test(zipVal);
-      setErrorById('zip', zipOk, 'Enter a 5-digit ZIP or ZIP+4');
-    
-      const insOk = gv('insurance').length>0; setErrorById('insurance', insOk, 'Enter insurance or "none"');
-    
-      const sexOk = rc('sex'); setGroupError('sexError', sexOk, 'Please select Legal Sex');
-      const reasonOk = rc('reason'); setGroupError('reasonError', reasonOk, 'Please select a reason');
-    
-      const y = gv('dobYear');
-      const yOk = /^\d{4}$/.test(y) && +y >= 1900 && +y <= new Date().getFullYear();
-      setErrorById('dobYear', yOk, 'Enter a 4-digit year');
-      const mOk = gv('dobMonth').length>0; setErrorById('dobMonth', mOk, 'Select month');
-      const dOk = gv('dobDay').length>0;   setErrorById('dobDay',   dOk, 'Select day');
-    
-      // Country code must be explicitly selected; also control helper text
-      const ccSel = document.getElementById('countryCode');
-      const ccErr = document.getElementById('countryCodeError');
-      const code  = (ccSel && ccSel.value) ? ccSel.value : '';
-      const ccSelected = !!code;
-      if (ccErr) ccErr.textContent = ccSelected ? '' : 'Select country code';
-    
-      // Phone validation: strict US (10 digits) when +1; otherwise ≥6 digits; invalid if no country code yet
-      const phoneRaw = (document.getElementById('phone')?.value||'').replace(/\D/g,'');
-      const phoneOk = ccSelected ? (code === '+1' ? phoneRaw.length === 10 : phoneRaw.length >= 6) : false;
-      setErrorById('phone', phoneOk, 'Enter a valid phone number');
-    
-      const stepOk = window.selectedDateISO && window.selectedSlot;
-    
-      const allOk = firstOk && lastOk && emailOk && addrOk && cityOk && stateOk && zipOk && insOk &&
-                    sexOk && reasonOk && yOk && mOk && dOk && phoneOk && stepOk && ccSelected;
-      scheduleBtn.disabled = !allOk;
-    }
-
-
-
-    // ===== Confirmation behavior (Step 4) =====
-    scheduleBtn?.addEventListener('click', function(e){
+    // Init calendar and validity
+    renderMonth();
+    gotoStep(1);
+    capDaysForMonthYear();
+    updateValidity();
+    // Handle scheduling: prevent default form submit, populate confirmation, go to Step 4
+    scheduleBtn?.addEventListener('click', (e)=>{
       e.preventDefault();
       if (scheduleBtn.disabled) return;
-      const whenTxt = friendlyDate(window.selectedDateISO + 'T00:00:00') + (window.selectedSlot?(' at '+window.selectedSlot):'');
+      const whenTxt = friendlyDateLocal(window.selectedDateISO) + (window.selectedSlot?(' at '+window.selectedSlot):'');
       if (confirmWhen) confirmWhen.textContent = whenTxt;
       if (confirmEmail) confirmEmail.textContent = (document.getElementById('email')?.value||'').trim();
       gotoStep(4);
     });
 
-    // Phone auto-format on blur; re-validate on country change
-    const phoneEl = document.getElementById('phone');
-    const codeSel = document.getElementById('countryCode');
-    
-    function formatPhoneByCode(){
-      if(!phoneEl) return;
-      const code = codeSel?.value || '+1';
-      let d = phoneEl.value.replace(/\D/g,'');
-      if(code === '+1'){
-        d = d.slice(0,10);
-        if(d.length >= 6) phoneEl.value = `(${d.slice(0,3)}) ${d.slice(3,6)}${d.length>6?'-'+d.slice(6):''}`;
-        else if(d.length > 3) phoneEl.value = `(${d.slice(0,3)}) ${d.slice(3)}`;
-        else if(d.length > 0) phoneEl.value = d;
-        else phoneEl.value = '';
-      } else {
-        // Generic: keep to digits, capped
-        phoneEl.value = d.slice(0,15);
-      }
-    }
-    
-    phoneEl?.addEventListener('blur', ()=>{ formatPhoneByCode(); updateValidity(); });
-    codeSel?.addEventListener('change', ()=>{ formatPhoneByCode(); updateValidity(); });
+    scheduleAnother?.addEventListener('click', ()=>{ window.selectedDateISO=null; window.selectedSlot=null; gotoStep(1); updateProgress(1); });
 
-
-    // ===== Init =====
-    //RNB safeRenderMonth();
-    renderMonth();
-    gotoStep(1);
-    updateValidity();
-    populateMonths();
-    populateDays();
-    dobMonthEl?.addEventListener('change', ()=>{ populateDays(); updateValidity(); });
-    dobYearEl?.addEventListener('input', ()=>{ populateDays(); updateValidity(); });
-    patientForm?.addEventListener('input', updateValidity);
-    patientForm?.addEventListener('change', updateValidity);
+    
   </script>
 </body>
 </html>
